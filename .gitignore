@@ -1,0 +1,62 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache / bytecode
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment files
+.env
+.venv/
+venv/
+env/
+
+# Dependency directories
+# (e.g., if you use pip install -t)
+lib/
+lib64/
+
+# Logs and runtime data
+*.log
+*.pid
+*.sqlite3
+*.db
+
+# Build and packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Testing and coverage
+.coverage
+.tox/
+.nox/
+.pytest_cache/
+htmlcov/
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.swp
+
+# Uvicorn / FastAPI specific
+# Uvicorn creates a reload process cache sometimes
+.reload/
+uvicorn.log
+
+# Static and temporary files
+/staticfiles/
+media/
+uploads/
+tmp/
+temp/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Jupyter Notebooks checkpoints
+.ipynb_checkpoint_
