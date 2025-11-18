@@ -38,8 +38,6 @@ async def evaluate_question(req: EvaluateQuestionRequest):
     """
     question = req.question
 
-    print("reached here")
-
     if not question:
         raise HTTPException(status_code=400, detail="Missing 'question' field in request body.")
 
