@@ -1,0 +1,27 @@
+[
+  {
+    "question": {
+      "dimension": "visual",
+      "level": "basic",
+      "type": "written",
+      "prompt_html": "Look at this 4-bar melody in C major. Count how many notes move by step (not skip).",
+      "image_url": "https://storage.googleapis.com/mtnp-assets/visual/q21.png",
+      "audio_url": null,
+      "options": null,
+      "response_type": "text",
+      "response_file_url": "https://storage.googleapis.com/mtnp-assets/visual/q21.png",
+      "response_text": "6"
+    }
+  },
+  {
+    "question_id": "q21",
+    "dimension": "visual",
+    "level": "basic",
+    "type": "written",
+    "prompt_html": "Look at this 4-bar melody in C major. Count how many notes move by <b>step</b> (not skip).",
+    "image_url": "./assets/q21.png",
+    "audio_url": null,
+    "options": null,
+    "response_type": "text"
+  }
+]

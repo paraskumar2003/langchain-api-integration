@@ -5,7 +5,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 app = FastAPI(
-    title="LangChain GPT API",
+    title="Mtn Music GPT API",
     description="A structured FastAPI service to get JSON output from GPT",
     version="1.0.0"
 )
@@ -35,4 +35,4 @@ async def limit_payload_size(request: Request, call_next):
 
 @app.get("/")
 def root():
-    return {"message": "LangChain GPT API running"}
+    return {"message": "Mtn Music GPT API running"}

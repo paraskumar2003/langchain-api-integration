@@ -36,72 +36,84 @@ User prompt: {prompt}
     return parser.parse(response.content)
 
 def get_question_evaluation(question: dict):
-    """
-    Evaluates a question + user response using an LLM prompt.
-    Returns a dict with keys: confidence_score, is_correct, reason.
-    """
+    response_type = question.get("response_type")
+    response_text = question.get("response_text")
+    response_file_url = question.get("response_file_url")
 
-    # 🧠 Step 1: Construct dynamic prompt with question data
-    prompt = f"""
-            {PROMPTS['evaluate_question']}
+    if response_type == "text":
+        user_response_section = f"""
+USER RESPONSE (TEXT):
+---------------------
+{response_text}
+"""
+    else:
+        user_response_section = f"""
+USER RESPONSE (FILE):
+---------------------
+The user has submitted a file for evaluation: {response_file_url}
+(This may be an image or audio file.)
+"""
 
-            Below is the question object. 
-            If 'response_type' is "text", evaluate based on 'response_text'. 
-            If 'response_type' is "image" or "audio", evaluate based on 'response_file_url'.
+    # Build prompt with dynamic injected section
+    system_prompt = f"""
+You are an expert evaluator for a music theory and visual reasoning exam.
 
-            Question Data:
-            {json.dumps(question, ensure_ascii=False, indent=2)}
-            """
+{user_response_section}
 
-    # 🧩 Step 2: Invoke the model
+QUESTION DETAILS:
+-----------------
+{json.dumps(question, ensure_ascii=False, indent=2)}
+
+EVALUATION RULES:
+1. If response_type == "text": evaluate only using the text above.
+2. If response_type != "text": evaluate using the file above.
+3. Compare the user response to the expected correct concept.
+4. Return STRICT JSON ONLY:
+
+{{
+  "confidence": 0.0,
+  "is_correct": true,
+  "reason": "explanation"
+}}
+"""
+
+    # Call model
+    response = model.invoke(system_prompt)
+
+    # Parse JSON
+    parser = JSONOutputParser()
     try:
-        print(prompt)
-        # response = model.invoke(prompt)
-        dummy_json = {
-            "confidence_score": 0.85,
-            "is_correct": True,
-            "reason": "The user's answer correctly identifies the number of steps in the melody."
-        }
-
-        # Simulate the structure of an actual model response
-        class DummyResponse:
-            def __init__(self, content):
-                self.content = content
-
-
-        response = DummyResponse(content=json.dumps(dummy_json))        
-
-        # 🧾 Step 3: Parse using JSONOutputParser
-        parser = JSONOutputParser()
-
+        parsed = parser.parse(response.content)
+    except:
+        raw = response.content.strip()
         try:
-            evaluation = parser.parse(response.content)
-        except Exception:
-            # fallback to manual extraction if malformed JSON
-            raw = response.content.strip()
+            parsed = json.loads(raw)
+        except:
             start, end = raw.find("{"), raw.rfind("}")
             if start != -1 and end != -1:
                 try:
-                    evaluation = json.loads(raw[start:end+1])
-                except Exception:
-                    evaluation = {}
+                    parsed = json.loads(raw[start:end+1])
+                except:
+                    parsed = {}
             else:
-                evaluation = {}
+                parsed = {}
 
-        # 🧱 Step 4: Validate structure
-        if not isinstance(evaluation, dict):
-            evaluation = {}
+    # Validate output
+    confidence = parsed.get("confidence")
+    is_correct = parsed.get("is_correct")
+    reason = parsed.get("reason")
 
-        evaluation.setdefault("confidence_score", 0.0)
-        evaluation.setdefault("is_correct", False)
-        evaluation.setdefault("reason", "Model returned invalid or incomplete response.")
+    if not isinstance(confidence, (int, float)) or not (0 < confidence < 1):
+        confidence = 0.5
 
-        return evaluation
+    if not isinstance(is_correct, bool):
+        is_correct = False
 
-    except Exception as e:
-        # 🧨 Catch model invocation errors
-        return {
-            "confidence_score": 0.0,
-            "is_correct": False,
-            "reason": f"Evaluation failed: {str(e)}"
-        }
+    if not isinstance(reason, str):
+        reason = "Model returned invalid reason."
+
+    return {
+        "confidence": float(confidence),
+        "is_correct": is_correct,
+        "reason": reason
+    }
