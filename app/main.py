@@ -11,7 +11,7 @@ app = FastAPI(
 )
 
 # Mount router
-app.include_router(router, prefix="/api", tags=["Chat"])
+app.include_router(router, prefix="/api/py", tags=["Chat"])
 
 # Create the limiter — using client IP address as the key
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
