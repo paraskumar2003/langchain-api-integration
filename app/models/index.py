@@ -16,16 +16,16 @@ from typing import Optional, List, Literal
 
 
 class QuestionModel(BaseModel):
-    dimension: Literal["visual", "aural", "theory"]
+    dimension: Literal["visual", "auditory", "subconscious"]
     level: Literal["basic", "intermediate", "advanced"]
-    type: Literal["written", "mcq", "aural"]
+    type: Literal["written", "mcq", "audio","psychometric","image"]
     prompt_html: str
 
     image_url: Optional[HttpUrl] = None
     audio_url: Optional[HttpUrl] = None
     options: Optional[List[str]] = None
 
-    response_type: Literal["text", "image", "audio"]
+    response_type: Literal["text", "image", "audio","mcq"]
 
     response_text: Optional[str] = None
     response_file_url: Optional[HttpUrl] = None
