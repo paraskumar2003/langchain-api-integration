@@ -41,8 +41,8 @@ async def evaluate_question(req: EvaluateQuestionRequest):
     if not question:
         raise HTTPException(status_code=400, detail="Missing 'question' field in request body.")
 
-    # result = get_question_evaluation(question)
-    result = {"is_correct": True, "reason": "Correct answer!", "confidence": 1}
+    result = get_question_evaluation(question)
+    # result = {"is_correct": True, "reason": "Correct answer!", "confidence": 1}
     return result
 
 

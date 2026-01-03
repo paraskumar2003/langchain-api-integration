@@ -35,4 +35,4 @@ async def limit_payload_size(request: Request, call_next):
 
 @app.get("/")
 def root():
-    return {"message": "Mtn Music GPT API running"}
+    return {"message": "OK"}
