@@ -18,7 +18,7 @@ from typing import Optional, List, Literal
 class QuestionModel(BaseModel):
     dimension: Literal["visual", "auditory", "subconscious"]
     level: Literal["basic", "intermediate", "advanced"]
-    type: Literal["written", "mcq", "audio", "psychometric", "image"]
+    type: Literal["text", "mcq", "audio", "psychometric", "image"]
     prompt_html: str
 
     image_url: Optional[HttpUrl] = None
