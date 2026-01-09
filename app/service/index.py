@@ -117,10 +117,19 @@ EVALUATION RULES:
 2. If response_type != "text": evaluate using the file above.
 3. Compare the user response to the expected correct concept.
 
+CONFIDENCE SCORE RULE:
+The confidence score must be a float from 0 to 1.
+
+It represents how certain you are about your evaluation based on:
+- clarity of the user response
+- match to the expected concept
+- completeness of reasoning
+- absence of ambiguity
+
 
 RETURN STRICT JSON ONLY IN THIS FORMAT:
 {{
-  "confidence": 0.0,
+  "confidence": 0.75,
   "is_correct": true,
   "reason": "explanation",
   "visual": 1,
@@ -164,7 +173,7 @@ Do not include markdown, comments, or extra text. Output JSON only.
     rhythmic = clamp_score(parsed.get("rhythmic"))
     subconscious = clamp_score(parsed.get("subconscious"))
 
-    if not isinstance(confidence, (int, float)) or not (0 < confidence < 1):
+    if not isinstance(confidence, int) or not (0 <= confidence <= 1):
         confidence = 0.5
 
     if not isinstance(is_correct, bool):
