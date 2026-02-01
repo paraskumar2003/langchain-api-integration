@@ -191,3 +191,99 @@ Do not include markdown, comments, or extra text. Output JSON only.
         "rhythmic": rhythmic,
         "subconscious": subconscious
     }
+
+def get_department_recommendation(cognitive_profile: dict):
+    profile_json = json.dumps(
+        cognitive_profile,
+        ensure_ascii=False,
+        indent=2
+    )
+
+    system_prompt = f"""
+You are an expert corporate psychologist and talent assessment specialist.
+
+Based on the following cognitive profile derived from 15 evaluation questions,
+identify the MOST SUITABLE corporate department for this user.
+
+COGNITIVE PROFILE:
+------------------
+{profile_json}
+
+Available departments:
+- Software Engineering
+- Data & Analytics
+- Product Management
+- UI/UX Design
+- Marketing & Branding
+- Sales & Business Development
+- Operations
+- HR & People Operations
+- Finance
+
+Rules:
+- Choose ONE primary department.
+- Optionally suggest one secondary department.
+- Explain reasoning clearly.
+- Then generate 8–10 relevant HR interview questions
+  tailored specifically for the selected department.
+
+RETURN STRICT JSON ONLY IN THIS FORMAT:
+{{
+  "primary_department": "",
+  "secondary_department": "",
+  "reasoning": "",
+  "hr_questions": []
+}}
+
+Do not include markdown, comments, or extra text.
+Output JSON only.
+"""
+
+    # 🔹 Call LLM
+    response = model.invoke(system_prompt)
+
+    # 🔹 Parse JSON
+    parser = JSONOutputParser()
+    try:
+        parsed = parser.parse(response.content)
+    except:
+        raw = response.content.strip()
+        try:
+            parsed = json.loads(raw)
+        except:
+            start, end = raw.find("{"), raw.rfind("}")
+            if start != -1 and end != -1:
+                try:
+                    parsed = json.loads(raw[start:end + 1])
+                except:
+                    parsed = {}
+            else:
+                parsed = {}
+
+    # 🔹 Validate output
+    primary_department = parsed.get("primary_department")
+    secondary_department = parsed.get("secondary_department")
+    reasoning = parsed.get("reasoning")
+    hr_questions = parsed.get("hr_questions")
+
+    if not isinstance(primary_department, str):
+        primary_department = "Unknown"
+
+    if not isinstance(secondary_department, str):
+        secondary_department = ""
+
+    if not isinstance(reasoning, str):
+        reasoning = "Model returned insufficient reasoning."
+
+    if not isinstance(hr_questions, list):
+        hr_questions = []
+
+    # keep only string questions
+    hr_questions = [q for q in hr_questions if isinstance(q, str)]
+
+    return {
+        "primary_department": primary_department,
+        "secondary_department": secondary_department,
+        "reasoning": reasoning,
+        "hr_questions": hr_questions
+    }

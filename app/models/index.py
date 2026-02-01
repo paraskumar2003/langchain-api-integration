@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field
+from typing import List
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -59,3 +60,15 @@ class QuestionModel(BaseModel):
 
 class EvaluateQuestionRequest(BaseModel):
     question: QuestionModel
+
+
+class CognitiveProfile(BaseModel):
+    visual: float
+    auditory: float
+    rhythmic: float
+    subconscious: float
+    confidence: float
+
+
+class DepartmentAssessmentRequest(BaseModel):
+    cognitive_profile: CognitiveProfile
