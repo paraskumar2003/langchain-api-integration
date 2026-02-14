@@ -73,7 +73,9 @@ The user has submitted a file for evaluation: {response_file_url}
 
     # Build prompt with dynamic injected section
     system_prompt = f"""
-You are an expert evaluator for a music theory and visual reasoning exam.
+You are an expert evaluator for MTNP, which produces long-form HR interpretation reports 
+based on how users visually interpret structured information. This is not a scoring system, 
+personality test, musical test, or psychometric questionnaire.
 
 {user_response_section}
 
@@ -81,65 +83,26 @@ QUESTION DETAILS:
 -----------------
 {question_json}
 
-EVALUATION DIMENSIONS:
----------------------
-In addition to correctness, evaluate the user's response on the following four cognitive dimensions.
-Each dimension must be scored STRICTLY from 1 to 10.
-
-1. VISUAL (1–10)
-- Measures visual understanding, imagery, notation recognition, diagrams, shapes, symbols, or spatial reasoning.
-- 1 = No visual understanding
-- 10 = Strong visual or symbolic comprehension
-
-2. AUDITORY (1–10)
-- Measures understanding based on sound, tone, pitch, listening, melody, harmony, or audio perception.
-- 1 = No auditory understanding
-- 10 = Excellent auditory reasoning
-
-3. RHYTHMIC (1–10)
-- Measures timing, rhythm, tempo, beats, meter, or pattern recognition in music.
-- 1 = No rhythmic awareness
-- 10 = Strong rhythmic precision
-
-4. SUBCONSCIOUS (1–10)
-- Measures intuitive grasp, instinctive correctness, conceptual clarity without explicit explanation.
-- 1 = Guesswork or confusion
-- 10 = Clear intuitive mastery
-
-SCORING RULES:
-- Scores must be integers between 1 and 10.
-- Do NOT return values outside this range.
-- If a dimension cannot be inferred, return a low but non-zero score (e.g., 3–4).
-
-
-EVALUATION RULES:
-1. If response_type == "text": evaluate only using the text above.
-2. If response_type != "text": evaluate using the file above.
-3. Compare the user response to the expected correct concept.
-
-CONFIDENCE SCORE RULE:
-The confidence score must be a float from 0 to 1.
-
-It represents how certain you are about your evaluation based on:
-- clarity of the user response
-- match to the expected concept
-- completeness of reasoning
-- absence of ambiguity
-
+TASK:
+-----
+Evaluate the user's response and provide:
+1. Correctness assessment (is_correct: true/false)
+2. Brief explanation (reason)
+3. Confidence score (0 to 1)
+4. HR analysis (approach, strengths, omissions, workplace interpretation)
 
 RETURN STRICT JSON ONLY IN THIS FORMAT:
 {{
   "confidence": 0.75,
   "is_correct": true,
-  "reason": "explanation",
-  "visual": 1,
-  "auditory": 1,
-  "rhythmic": 1,
-  "subconscious": 1
+  "reason": "brief explanation",
+  "candidates_approach": "how they approached the material",
+  "demonstrated_strengths": "what they did well",
+  "omissions_or_delays": "what they missed or delayed",
+  "hr_interpretation": "workplace implications"
 }}
 
-Do not include markdown, comments, or extra text. Output JSON only.
-
+Output JSON only. No markdown, no comments.
 """
 
     # Call model
@@ -168,10 +131,17 @@ Do not include markdown, comments, or extra text. Output JSON only.
     is_correct = parsed.get("is_correct")
     reason = parsed.get("reason")
 
-    visual = clamp_score(parsed.get("visual"))
-    auditory = clamp_score(parsed.get("auditory"))
-    rhythmic = clamp_score(parsed.get("rhythmic"))
-    subconscious = clamp_score(parsed.get("subconscious"))
+    # Set static cognitive dimension scores (not computed by GPT)
+    visual = 1
+    auditory = 1
+    rhythmic = 1
+    subconscious = 1
+
+    # Extract new HR analysis fields
+    candidates_approach = parsed.get("candidates_approach")
+    demonstrated_strengths = parsed.get("demonstrated_strengths")
+    omissions_or_delays = parsed.get("omissions_or_delays")
+    hr_interpretation = parsed.get("hr_interpretation")
 
     if not isinstance(confidence, int) or not (0 <= confidence <= 1):
         confidence = 0.5
@@ -182,6 +152,19 @@ Do not include markdown, comments, or extra text. Output JSON only.
     if not isinstance(reason, str):
         reason = "Model returned invalid reason."
 
+    # Validate HR analysis fields
+    if not isinstance(candidates_approach, str):
+        candidates_approach = "No approach analysis available."
+
+    if not isinstance(demonstrated_strengths, str):
+        demonstrated_strengths = "No strengths analysis available."
+
+    if not isinstance(omissions_or_delays, str):
+        omissions_or_delays = "No omissions analysis available."
+
+    if not isinstance(hr_interpretation, str):
+        hr_interpretation = "No HR interpretation available."
+
     return {
         "confidence": float(confidence),
         "is_correct": is_correct,
@@ -189,7 +172,11 @@ Do not include markdown, comments, or extra text. Output JSON only.
         "visual": visual,
         "auditory": auditory,
         "rhythmic": rhythmic,
-        "subconscious": subconscious
+        "subconscious": subconscious,
+        "candidates_approach": candidates_approach,
+        "demonstrated_strengths": demonstrated_strengths,
+        "omissions_or_delays": omissions_or_delays,
+        "hr_interpretation": hr_interpretation
     }
 
 def get_department_recommendation(cognitive_profile: dict):
